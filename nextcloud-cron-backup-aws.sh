@@ -12,6 +12,9 @@ cd /var/snap/nextcloud/common/backups
 backup_name="$(ls -1t | head -1)"
 backup_archive="/tmp/${backup_name}.tar.xz"
 
+# Remove big temporary data (logs, cache...)
+rm -r "${backup_name}/data"
+
 XZ_OPT=-0 tar cJf "${backup_archive}" "${backup_name}"
 backup_size=$(wc -c < ${backup_archive})
 
@@ -43,12 +46,17 @@ function check_and_rotate() {
     done
 
     printf "" > $source_file
+    return 0
+  else
+    return 1
   fi
 }
 
 check_and_rotate "$DIR/archiveIds" "$DIR/archiveIdsWeek" $(date '+%u')
-check_and_rotate "$DIR/archiveIdsWeek" "$DIR/archiveIdsMonth" $(date '+%d')
-check_and_rotate "$DIR/archiveIdsMonth" "$DIR/archiveIdsYear" $(date '+%m')
+
+# Only try to rotate year if it's also the first of month
+check_and_rotate "$DIR/archiveIdsWeek" "$DIR/archiveIdsMonth" $(date '+%d') \
+&& check_and_rotate "$DIR/archiveIdsMonth" "$DIR/archiveIdsYear" $(date '+%m')
 
 rm -rf "${backup_archive}" "${backup_name}"
 echo "Backup success"
