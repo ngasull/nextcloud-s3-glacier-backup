@@ -1,0 +1,1 @@
+0 5 * * * export HOME=/home/blint ; . /etc/profile ; . $HOME/.profile ; /home/blint/nextcloud-to-glacier/nextcloud-cron-backup-aws.sh >> /home/blint/nextcloud-to-glacier/nextcloud-to-glacier.log 2>&1
